@@ -9,7 +9,7 @@ export const WalletContext = createContext({
   address: "",
   signer: null as Signer | null,
   connectWallet: () => {},
-  //   disconnectWallet: () => {},
+  disconnectWallet: () => {},
 });
 
 export const WalletContextProvider = ({
@@ -49,6 +49,21 @@ export const WalletContextProvider = ({
     }
   };
 
+  const disconnectWallet = async () => {
+    try {
+      const { ethereum } = window as CustomWindow;
+      if (!ethereum) {
+        console.log("No ethereum object found.");
+        return;
+      }
+      //await ethereum.request({ method: "eth_logout" });
+      setAddress("");
+      setSigner(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -81,7 +96,7 @@ export const WalletContextProvider = ({
     address,
     signer,
     connectWallet,
-    // disconnectWallet,
+    disconnectWallet,
 
   };
 

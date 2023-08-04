@@ -8,7 +8,7 @@ const Button = ({
   handleClick: () => void;
 }) => {
   return (
-    <button className="p-2 rounded-lg bg-primary w-16" onClick={handleClick}>
+    <button className="p-2 rounded-lg bg-primary" onClick={handleClick}>
       {label}
     </button>
   );

@@ -1,12 +1,15 @@
 import { createContext, useEffect, useState } from "react";
+import { Signer, ethers } from "ethers";
+
+interface CustomWindow extends Window {
+  ethereum?: any; 
+}
 
 export const WalletContext = createContext({
   address: "",
-  signer: null,
+  signer: null as Signer | null,
   connectWallet: () => {},
   //   disconnectWallet: () => {},
-  network: "",
-  switchNetwork: () => {},
 });
 
 export const WalletContextProvider = ({
@@ -14,10 +17,9 @@ export const WalletContextProvider = ({
 }: {
   children: JSX.Element;
 }) => {
-  const [address, setAddress] = useState("");
-  const [signer, setSigner] = useState(null);
-  const [network, setNetwork] = useState("");
-
+  const [address, setAddress] = useState<string>("");
+  const [signer, setSigner] = useState<Signer|null>(null);
+ 
   useEffect(() => {
     checkIfWalletIsConnected();
   }, []);
@@ -28,8 +30,9 @@ export const WalletContextProvider = ({
 
   const connectWallet = async () => {
     console.log("in connect wallet");
+ 
     try {
-      const { ethereum } = window;
+      const { ethereum } = window as CustomWindow;
       if (!ethereum) {
         alert("Get MetaMask!");
         return;
@@ -38,70 +41,18 @@ export const WalletContextProvider = ({
         method: "eth_requestAccounts",
       });
       setAddress(accounts[0]);
-      await checkNetwork();
+      const provider = new ethers.BrowserProvider(ethereum);
+      const currentSigner = await provider.getSigner();
+      setSigner(currentSigner);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const checkNetwork = async () => {
-    try {
-      const { ethereum } = window;
-      const chainId = await ethereum.request({
-        method: "eth_chainId",
-      });
-      setNetwork(chainId);
-      console.log(chainId);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const switchNetwork = async () => {
-    if (window.ethereum) {
-      try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x13881" }],
-        });
-      } catch (error: any) {
-        console.log(error.code);
-        if (error.code === 4902) {
-          try {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [
-                {
-                  chainId: "0x13881",
-                  chainName: "Polygon Mumbai Testnet",
-                  rpcUrls: ["https://matic-mumbai.chainstacklabs.com"],
-                  nativeCurrency: {
-                    name: "Mumbai Matic",
-                    symbol: "MATIC",
-                    decimals: 18,
-                  },
-                  blockExplorerUrls: ["https://mumbai.polygonscan.com/"],
-                },
-              ],
-            });
-            window.ethereum.on("chainChanged", handleChange);
-          } catch (error) {
-            console.log(error);
-          }
-        }
-        console.log(typeof error);
-      }
-    } else {
-      // If window.ethereum is not found then MetaMask is not installed
-      alert(
-        "MetaMask is not installed. Please install it to use this app: https://metamask.io/download.html"
-      );
-    }
-  };
 
   const checkIfWalletIsConnected = async () => {
     try {
-      const { ethereum } = window;
+      const { ethereum } = window as CustomWindow;
       if (!ethereum) {
         console.log("Make sure you have metamask!");
         alert("Make sure you have metamask!");
@@ -116,7 +67,6 @@ export const WalletContextProvider = ({
         const account = accounts[0];
         console.log("Found an authorized account:", account);
         setAddress(account);
-        await checkNetwork();
         ethereum.on("accountsChanged", handleChange);
         ethereum.on("chainChanged", handleChange);
       } else {
@@ -132,8 +82,7 @@ export const WalletContextProvider = ({
     signer,
     connectWallet,
     // disconnectWallet,
-    network,
-    switchNetwork,
+
   };
 
   return (

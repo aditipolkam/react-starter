@@ -1,5 +1,5 @@
 {
-  "name": "react-starter",
+  "name": "xmtp-v2",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@xmtp/content-type-remote-attachment": "^1.0.7",
+    "@xmtp/react-sdk": "^1.0.0-preview.2",
     "@xmtp/xmtp-js": "^10.1.0",
+    "buffer": "^6.0.3",
     "ethers": "^6.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
